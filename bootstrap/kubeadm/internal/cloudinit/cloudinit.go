@@ -28,7 +28,7 @@ import (
 )
 
 const (
-	standardJoinCommand = "kubeadm join --config /run/kubeadm/kubeadm-join-config.yaml %s"
+	standardJoinCommand = "kubeadm join --config /run/kubeadm/kubeadm-join-config.yaml %s 2>&1 > /var/log/kubeadm-join.log"
 	// sentinelFileCommand writes a file to /run/cluster-api to signal successful Kubernetes bootstrapping in a way that
 	// works both for Linux and Windows OS.
 	sentinelFileCommand            = "echo success > /run/cluster-api/bootstrap-success.complete"
