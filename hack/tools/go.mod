@@ -15,7 +15,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/pflag v1.0.5
 	github.com/valyala/fastjson v1.6.4
-	golang.org/x/oauth2 v0.19.0
+	golang.org/x/oauth2 v0.21.0
 	google.golang.org/api v0.172.0
 	k8s.io/api v0.29.3
 	k8s.io/apiextensions-apiserver v0.29.3
@@ -37,8 +37,7 @@ require github.com/moby/docker-image-spec v1.3.1 // indirect
 
 require (
 	cloud.google.com/go v0.112.1 // indirect
-	cloud.google.com/go/compute v1.24.0 // indirect
-	cloud.google.com/go/compute/metadata v0.2.3 // indirect
+	cloud.google.com/go/compute/metadata v0.3.0 // indirect
 	cloud.google.com/go/iam v1.1.7 // indirect
 	dario.cat/mergo v1.0.0 // indirect
 	github.com/MakeNowJust/heredoc v1.0.0 // indirect
