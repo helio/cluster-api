@@ -121,7 +121,7 @@ func (r *MachinePoolReconciler) reconcileNodeRefs(ctx context.Context, cluster *
 // A MachinePool infrastructure provider indicates an instance in the set has been deleted by
 // removing its ProviderID from the slice.
 func (r *MachinePoolReconciler) deleteRetiredNodes(ctx context.Context, c client.Client, nodeRefs []corev1.ObjectReference, providerIDList []string) error {
-	log := ctrl.LoggerFrom(ctx, "providerIDList", len(providerIDList))
+	log := ctrl.LoggerFrom(ctx, "providerIDList", len(providerIDList), "method", "deleteRetiredNodes")
 	nodeRefsMap := make(map[string]*corev1.Node, len(nodeRefs))
 	for _, nodeRef := range nodeRefs {
 		node := &corev1.Node{}
@@ -145,6 +145,7 @@ func (r *MachinePoolReconciler) deleteRetiredNodes(ctx context.Context, c client
 		delete(nodeRefsMap, providerID)
 	}
 	for _, node := range nodeRefsMap {
+		log.Info("deleting retired node", "node", node.Name)
 		if err := c.Delete(ctx, node); err != nil {
 			return errors.Wrapf(err, "failed to delete Node")
 		}
