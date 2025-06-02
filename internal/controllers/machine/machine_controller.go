@@ -523,13 +523,24 @@ func (r *Reconciler) reconcileDelete(ctx context.Context, s *scope) (ctrl.Result
 				r.recorder.Eventf(m, corev1.EventTypeWarning, "FailedDrainNode", "error draining Machine's node %q: %v", m.Status.NodeRef.Name, err)
 				return ctrl.Result{}, err
 			}
-			if !result.IsZero() {
-				// Note: For non-error cases where the drain is not completed yet the DrainingSucceeded condition is updated in drainNode.
-				return result, nil
+			if result.IsZero() {
+				conditions.MarkTrue(m, clusterv1.DrainingSucceededCondition)
+				r.recorder.Eventf(m, corev1.EventTypeNormal, "SuccessfulDrainNode", "success draining Machine's node %q", m.Status.NodeRef.Name)
+			} else {
+				since := time.Since(m.Status.Deletion.NodeDrainStartTime.Time)
+				timeout := 10 * time.Minute
+				if since > timeout {
+					// if timeout reached, mark draining as failed and continue with normal deletion (i.e. no return in this branch)
+					log.Info("timeout draining node", "since", since, "timeout", timeout)
+					conditions.MarkFalse(m, clusterv1.DrainingSucceededCondition, clusterv1.DrainingFailedReason, clusterv1.ConditionSeverityWarning, "drain timeout reached")
+					s.deletingReason = clusterv1.MachineDeletingDrainingNodeV1Beta2Reason
+					s.deletingMessage = "Timeout reached for draining node, check controller logs for errors"
+					r.recorder.Eventf(m, corev1.EventTypeWarning, "FailedDrainNode", "error draining Machine's node %q: %v", m.Status.NodeRef.Name, err)
+				} else {
+					// Note: For non-error cases where the drain is not completed yet the DrainingSucceeded condition is updated in drainNode.
+					return result, nil
+				}
 			}
-
-			conditions.MarkTrue(m, clusterv1.DrainingSucceededCondition)
-			r.recorder.Eventf(m, corev1.EventTypeNormal, "SuccessfulDrainNode", "success draining Machine's node %q", m.Status.NodeRef.Name)
 		}
 
 		// After node draining is completed, and if isNodeVolumeDetachingAllowed returns True, make sure all
