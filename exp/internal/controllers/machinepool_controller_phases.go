@@ -456,6 +456,11 @@ func (r *MachinePoolReconciler) computeDesiredMachine(mp *expv1.MachinePool, inf
 		kubernetesVersion = &existingNode.Status.NodeInfo.KubeletVersion
 	}
 
+	specToApply := mp.Spec.Template.Spec.DeepCopy()
+	specToApply.Bootstrap = clusterv1.Bootstrap{}
+	specToApply.InfrastructureRef = infraRef
+	specToApply.Version = kubernetesVersion
+
 	machine := &clusterv1.Machine{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: infraMachine.GetName(),
@@ -465,11 +470,7 @@ func (r *MachinePoolReconciler) computeDesiredMachine(mp *expv1.MachinePool, inf
 			Labels:          make(map[string]string),
 			Annotations:     make(map[string]string),
 		},
-		Spec: clusterv1.MachineSpec{
-			ClusterName:       mp.Spec.ClusterName,
-			InfrastructureRef: infraRef,
-			Version:           kubernetesVersion,
-		},
+		Spec: *specToApply,
 	}
 
 	if existingMachine != nil {
